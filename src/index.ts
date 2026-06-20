@@ -42,6 +42,10 @@ export class WorkersKVStoreSingle extends WorkersKVStore {
     super(cacheKey, cfKVNamespace);
   }
 
+  public scoped(scope: string): WorkersKVStoreSingle {
+    return WorkersKVStoreSingle.getOrInitialize(`${this.cacheKey}:${scope}`, this.cfKVNamespace);
+  }
+
   static getOrInitialize(cacheKey: string, cfKVNamespace: KVNamespace): WorkersKVStoreSingle {
     if (!WorkersKVStoreSingle.instance) {
       WorkersKVStoreSingle.instance = new Map<string, WorkersKVStoreSingle>();

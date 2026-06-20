@@ -4,7 +4,7 @@ import type { EmulatorEnv } from './emulator';
 import { useEmulator } from './emulator';
 import type { ErrorInfo } from './errors';
 import { AppErrorCodes, AuthClientErrorCode, FirebaseAppError, FirebaseAuthError } from './errors';
-import type { KeyStorer } from './key-store';
+import { scopedKeyStorer, type KeyStorer } from './key-store';
 import type { FirebaseIdToken, FirebaseTokenVerifier } from './token-verifier';
 import { createIdTokenVerifier, createSessionCookieVerifier } from './token-verifier';
 import type { UserRecord } from './user-record';
@@ -17,8 +17,8 @@ export class BaseAuth {
   private readonly _authApiClient?: AuthApiClient;
 
   constructor(projectId: string, keyStore: KeyStorer, credential?: Credential) {
-    this.idTokenVerifier = createIdTokenVerifier(projectId, keyStore);
-    this.sessionCookieVerifier = createSessionCookieVerifier(projectId, keyStore);
+    this.idTokenVerifier = createIdTokenVerifier(projectId, scopedKeyStorer(keyStore, 'id-token'));
+    this.sessionCookieVerifier = createSessionCookieVerifier(projectId, scopedKeyStorer(keyStore, 'session-cookie'));
 
     if (credential) {
       this._authApiClient = new AuthApiClient(projectId, credential);

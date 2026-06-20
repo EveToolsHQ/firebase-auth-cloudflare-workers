@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ApiSettings } from '../src/api-requests';
 import { BaseAuth } from '../src/auth';
 import { AuthApiClient } from '../src/auth-api-requests';
@@ -23,6 +23,28 @@ const sessionCookieUids = [
   generateRandomString(20),
   generateRandomString(20),
 ];
+
+describe('BaseAuth key store scoping', () => {
+  it('scopes key store separately for id-token and session-cookie verifiers', () => {
+    const scoped = vi.fn(
+      (_scope: string): KeyStorer => ({
+        get: vi.fn(),
+        put: vi.fn(),
+      })
+    );
+    const keyStorer: KeyStorer = {
+      get: vi.fn(),
+      put: vi.fn(),
+      scoped,
+    };
+
+    new BaseAuth(projectId, keyStorer);
+
+    expect(scoped).toHaveBeenCalledTimes(2);
+    expect(scoped).toHaveBeenCalledWith('id-token');
+    expect(scoped).toHaveBeenCalledWith('session-cookie');
+  });
+});
 
 describe('createSessionCookie()', () => {
   const expiresIn = 24 * 60 * 60 * 1000;
